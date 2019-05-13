@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/css/base.css"/>
+    <link rel="stylesheet" href="static/lib/astiloader/astiloader.css">
+    <link rel="stylesheet" href="static/lib/astimodaler/astimodaler.css">
+    <link rel="stylesheet" href="static/lib/astinotifier/astinotifier.css">
+    <link rel="stylesheet" href="static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="left" id="summary">
+	  <span id="summary_detail"><center>Details</center></span>
+	  <hr></hr>
+	  <table style="width:100%">
+	  <tr>
+	  <td>Deployments</td><td class="center"><span class="center" id="deployments"></span></td>
+	  </tr>
+	  <tr>
+	  <td>PersistentVolumes</td><td class="center"><span class="center" id="persistentvolumes"></span></td>
+	  </tr>
+	  <tr>
+	  <td>PersistentVolumeClaims</td><td class="center"><span class="center" id="persistentvolumeclaims"></span></td>
+	  </tr>
+	  <tr>
+	  <td>Pods</td><td class="center"><span class="center" id="pods"></span></td>
+	  </tr>
+	  <tr>
+	  <td>ReplicationController</td><td class="center"><span class="center" id="replicationcontrollers"></span></td>
+	  </tr>
+	  <tr>
+	  <td>Services</td><td class="center"><span class="center" id="services"></span></td>
+	  </tr>
+	   <tr>
+	  <td>StatefulSets</td><td class="center"><span class="center" id="statefulsets"></span></td>
+	  </tr>
+	  </tr>
+	   <tr>
+	  <td>StorageClasses</td><td class="center"><span class="center" id="storageclasses"></span></td>
+	  </tr>
+	 
+	
+	  </table>
+	</div>
+    <div class="right">
+		<div class="title"><input type="text" style="width:80%" id="path" value="test"></input><button id="buttontest" onclick="getFresh()">Refresh</button></div>
+		<div class="panel" id="wrapper"> <div id="tree"></div></div>
+    </div>
+	<link href="libs/jsonTree/jsonTree.css" rel="stylesheet" />
+    <script src="libs/jsonTree/jsonTree.js"></script>
+	
+    <script src="static/js/index.js"></script>
+    <script src="static/lib/astiloader/astiloader.js"></script>
+    <script src="static/lib/astimodaler/astimodaler.js"></script>
+    <script src="static/lib/astinotifier/astinotifier.js"></script>
+    <script src="static/lib/chart/chart.min.js"></script>
+
+    <script type="text/javascript">
+	var deployments=0;
+	var services=0;
+	var pods=0;
+	var statefulsets=0;
+	var storageclasses=0;
+	var persistentvolumes=0;
+	var persistentvolumeclaims=0;
+	var replicationcontrollers=0;
+	
+	// This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        astilectron.sendMessage({name: "event.name", payload: "hello"}, function(message) {
+            console.log("received " + message.payload)
+        });
+    })
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        // This will listen to messages sent by GO
+        astilectron.onMessage(function(message) {
+            // Process message
+            if (message.name === "wait") {
+                 document.getElementById("path").value = message.payload
+            }
+			 if (message.name === "object") {
+				// Get DOM-element for inserting json-tree
+                var wrapper = document.getElementById("wrapper");
+				var obj=JSON.parse(message.payload)
+				
+				//wrapper.innerHTML=wrapper.innerHTML + "<span> <b>" + obj.metadata.name + "</b></span></br>"
+                // Create json-tree
+                var tree = jsonTree.create(obj, wrapper);	
+					
+				switch(obj.kind){
+					case "Deployment":
+					     deployments++;
+						 break;
+					case "Service":
+					     services++;
+						 break;
+					case "StatefulSet":
+					     statefulsets++;
+						 break;
+					case "Pod":
+					     pods++;
+						 break;
+					case "StorageClass":
+					     storageclasses++;
+						 break;
+					case "PersistentVolume":
+					     persistentvolumes++;
+						 break;
+					case "PersistentVolumeClaim":
+					     persistentvolumeclaims++;
+						 break;
+					case "ReplicationController":
+					     replicationcontrollers++;
+						 break;
+				}
+				document.getElementById("deployments").innerHTML=deployments;
+				document.getElementById("services").innerHTML=services;
+				document.getElementById("statefulsets").innerHTML=statefulsets;
+				document.getElementById("pods").innerHTML=pods;
+				document.getElementById("storageclasses").innerHTML=storageclasses;
+				document.getElementById("persistentvolumes").innerHTML=persistentvolumes;
+				document.getElementById("persistentvolumeclaims").innerHTML=persistentvolumeclaims;
+				document.getElementById("replicationcontrollers").innerHTML=replicationcontrollers;
+				//document.getElementById("path").innerHTML=document.getElementById("path").innerHTML+"</br>"+obj.kind+"-"+obj.metadata.name
+			}
+        });
+    })
+	function getFresh(){
+		//Reset counts
+		 deployments=0;
+	     services=0;
+	     pods=0;
+ 	     statefulsets=0;
+     	 storageclasses=0;
+    	 persistentvolumes=0;
+	     persistentvolumeclaims=0;
+	     replicationcontrollers=0;
+		 astilectron.sendMessage({name: "clicked", payload: document.getElementById("path").value}, function(message) {
+            document.getElementById("path").value = message.payload
+        });
+	}
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: baz
+  namespace: bat
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: foo
+  namespace: bar
